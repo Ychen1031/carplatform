@@ -1,0 +1,48 @@
+body {
+  margin: 0;
+  font-family: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  background:
+    radial-gradient(circle at 18% 15%, rgba(214, 170, 121, 0.25), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(75, 123, 112, 0.21), transparent 38%),
+    #f3ecdf;
+  color: #171618;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* ══════════════════════════════════════════════════
+   全域 Ant Design Form 修正
+   ══════════════════════════════════════════════════ */
+
+/* 1. label 本身強制 flex-row，讓 * 和文字在同一行 */
+.ant-form-item-label > label {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  height: auto !important;
+}
+
+
+/* ══════════════════════════════════════════════════
+   Modal / Drawer 內的表單間距收緊
+   ══════════════════════════════════════════════════ */
+.ant-modal-content .ant-form-item,
+.ant-drawer-body .ant-form-item {
+  margin-bottom: 14px !important;
+}
+
+.ant-modal-content .ant-form-item-label,
+.ant-drawer-body .ant-form-item-label {
+  padding-bottom: 2px !important;
+}
+
+.ant-modal-content .ant-form-item-label > label,
+.ant-drawer-body .ant-form-item-label > label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+}

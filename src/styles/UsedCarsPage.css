@@ -1,0 +1,178 @@
+/* UsedCarsPage 配色 - 使用深棕色系，與新車的棕色相似但有所區別 */
+
+/* 覆蓋品牌展示區的配色 */
+.used-cars-page .brands-showcase {
+  background: linear-gradient(180deg, rgba(139, 69, 19, 0.05), transparent);
+}
+
+.used-cars-page .brand-card-showcase:hover {
+  border-color: #8b4513;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.12);
+}
+
+.used-cars-page .brand-card-showcase.active {
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.12), rgba(101, 50, 15, 0.08));
+  border-color: #8b4513;
+  box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.25);
+}
+
+/* 覆蓋按鈕的配色 */
+.used-cars-page .btn-inquiry {
+  background-color: #8b4513;
+  border-color: #8b4513;
+}
+
+.used-cars-page .btn-inquiry:hover {
+  background-color: #704214;
+  border-color: #704214;
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.used-cars-page .btn-inquiry:active {
+  background-color: #5a3410;
+  border-color: #5a3410;
+}
+
+.used-cars-page .btn-contact {
+  background-color: #8b4513;
+  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
+}
+
+.used-cars-page .btn-contact:hover {
+  background-color: #704214;
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.4);
+}
+
+.used-cars-page .btn-test-drive {
+  background: rgba(139, 69, 19, 0.1);
+  border: 2px solid #8b4513;
+  color: #704214;
+}
+
+.used-cars-page .btn-test-drive:hover {
+  background-color: #8b4513;
+  box-shadow: 0 6px 16px rgba(139, 69, 19, 0.4);
+}
+
+/* 英雄區配色 */
+.used-cars-page .new-cars-hero {
+  background: linear-gradient(135deg, #8b4513 0%, #704214 100%);
+}
+
+/* 活躍卡片邊框 */
+.used-cars-page .car-listing.active {
+  border-left: 4px solid #8b4513;
+  box-shadow: 0 0 0 1px rgba(139, 69, 19, 0.2);
+}
+
+/* 細節面板相關 */
+.used-cars-page .detail-image {
+  border: 2px solid #8b4513;
+}
+
+.used-cars-page .modal-content {
+  border-top: 4px solid #8b4513;
+}
+
+.used-cars-page .btn-submit {
+  background-color: #8b4513;
+}
+
+.used-cars-page .btn-submit:hover {
+  background-color: #704214;
+}
+
+.used-cars-page .filter-group select:focus,
+.used-cars-page .filter-group input:focus {
+  border-color: #8b4513;
+}
+
+/* 品牌卡片 Logo 濾鏡 */
+.used-cars-page .brand-logo {
+  filter: brightness(0.85) saturate(1.1) hue-rotate(5deg);
+}
+
+/* 收藏按鈕配色 */
+.used-cars-page .btn-favorite {
+  border-color: #8b4513;
+  color: #8b4513;
+}
+
+.used-cars-page .btn-favorite:hover {
+  background: rgba(139, 69, 19, 0.1);
+}
+
+.used-cars-page .btn-favorite-action {
+  border: none;
+  color: var(--white);
+  outline: none;
+  box-shadow: 0 2px 8px rgba(226, 73, 73, 0.2);
+  background: #e24949;
+}
+
+.used-cars-page .btn-favorite-action:focus,
+.used-cars-page .btn-favorite-action:active {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(226, 73, 73, 0.2);
+  border: none;
+  background: #e24949;
+}
+
+.used-cars-page .btn-favorite-action:hover {
+  color: var(--white);
+  background: #c62828;
+  box-shadow: 0 6px 16px rgba(226, 73, 73, 0.4);
+  transform: translateY(-2px);
+}
+
+.used-cars-page .btn-favorite-action.favorited {
+  background: #e24949;
+  border: none;
+  color: white;
+}
+
+/* 成功消息 */
+.success-message {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: #4caf50;
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 16px;
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-message h3 {
+  font-size: 20px;
+  margin: 0 0 8px 0;
+  color: var(--ink-900);
+}
+
+.success-message p {
+  color: var(--ink-500);
+  margin: 0;
+}
+
+
+

@@ -1,0 +1,44 @@
+.messages-page {
+  min-height: calc(100vh - 140px);
+  padding: 40px 16px;
+}
+
+.messages-page .container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.messages-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.messages-table th,
+.messages-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f2f2f2;
+  text-align: left;
+  vertical-align: top;
+}
+
+.messages-table thead th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.message-cell {
+  max-width: 420px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error {
+  color: #b42318;
+  background: #ffe8e6;
+  padding: 12px;
+  border-radius: 8px;
+}

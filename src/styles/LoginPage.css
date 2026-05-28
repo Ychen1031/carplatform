@@ -1,0 +1,213 @@
+/* ========================================
+   Login Page – 完全符合截圖樣式
+   ======================================== */
+
+.login-page {
+  min-height: 100vh;
+  background-color: #ececec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ── Card ── */
+.login-card-wrapper .ant-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10) !important;
+  border: none !important;
+}
+
+.login-card-wrapper .ant-card-body {
+  padding: 40px 36px 32px !important;
+}
+
+/* ── Title ── */
+.login-title {
+  text-align: center;
+  font-size: 26px;
+  color: #222;
+  margin-bottom: 24px;
+  font-weight: 600;
+  margin-top: 0;
+  letter-spacing: 2px;
+}
+
+/* ── Form Items ── */
+.login-page .ant-form-item {
+  margin-bottom: 12px;
+}
+
+.login-page .ant-form-item-label > label {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  height: auto !important;
+}
+
+.login-page .ant-form-item-label {
+  padding-bottom: 6px !important;
+  line-height: 1.4 !important;
+}
+
+/* ── Inputs ── */
+.login-page .ant-input,
+.login-page .ant-input-password {
+  font-size: 14px !important;
+  border: 1.5px solid #d9d9d9 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #333 !important;
+  transition: border-color 0.2s !important;
+}
+
+.login-page .ant-input:focus,
+.login-page .ant-input-focused,
+.login-page .ant-input-password:focus-within {
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+}
+
+/* remove prefix icon */
+.login-page .ant-input-prefix {
+  display: none !important;
+}
+
+/* password input inner */
+.login-page .ant-input-password .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding-left: 11px !important;
+}
+
+.login-page .ant-input-password {
+  padding: 0 11px 0 0 !important;
+  align-items: center;
+}
+
+.login-page .ant-input-affix-wrapper {
+  border: 1.5px solid #d9d9d9 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  padding: 0 11px !important;
+}
+
+.login-page .ant-input-affix-wrapper:focus,
+.login-page .ant-input-affix-wrapper-focused {
+  border-color: #bfbfbf !important;
+  box-shadow: none !important;
+}
+
+.login-page .ant-input-affix-wrapper .ant-input {
+  font-size: 14px !important;
+  height: 38px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* suffix eye icon */
+.login-page .ant-input-suffix {
+  color: #bbb !important;
+  font-size: 16px !important;
+}
+
+.login-page .ant-input-password-icon {
+  color: #bbb !important;
+}
+
+/* placeholder colour */
+.login-page .ant-input::placeholder,
+.login-page .ant-input-affix-wrapper input::placeholder {
+  color: #bbb !important;
+  font-size: 14px !important;
+}
+
+/* ── Submit Button ── */
+.login-page .ant-btn-primary {
+  background: #c97d2e !important;
+  border-color: #c97d2e !important;
+  border-radius: 6px !important;
+  height: 44px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  letter-spacing: 4px !important;
+  box-shadow: none !important;
+  transition: background 0.2s !important;
+}
+
+.login-page .ant-btn-primary:hover,
+.login-page .ant-btn-primary:focus {
+  background: #b86d22 !important;
+  border-color: #b86d22 !important;
+}
+
+.login-page .ant-btn-primary:disabled {
+  background: #e0a868 !important;
+  border-color: #e0a868 !important;
+  opacity: 0.7 !important;
+}
+
+/* ── Bottom link text ── */
+.login-footer-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.login-footer-text a {
+  color: #1677ff;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.login-footer-text a:hover {
+  text-decoration: underline;
+}
+
+/* ── Alert ── */
+.login-page .ant-alert {
+  font-size: 14px !important;
+  border-radius: 6px !important;
+  margin-bottom: 16px;
+}
+
+/* ── Animation ── */
+.login-container {
+  animation: fadeSlideUp 0.4s ease-out;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .login-page {
+    padding: 12px;
+  }
+
+  .login-card-wrapper .ant-card-body {
+    padding: 28px 20px 24px !important;
+  }
+
+  .login-title {
+    font-size: 22px;
+  }
+}

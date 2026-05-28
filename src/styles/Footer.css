@@ -1,0 +1,145 @@
+.footer {
+  background-color: var(--ink-900);
+  color: var(--white);
+  padding: 60px 0 30px 0;
+  margin-top: 80px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-column h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sun-500);
+  margin: 0 0 20px 0;
+  letter-spacing: 0.5px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column li {
+  margin-bottom: 12px;
+}
+
+.footer-column a {
+  color: var(--sand-50);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.footer-column a:hover {
+  color: var(--sun-500);
+  transform: translateX(4px);
+}
+
+.contact-info {
+  font-size: 13px;
+}
+
+.contact-info p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.contact-info strong {
+  color: var(--sun-500);
+  font-weight: 600;
+}
+
+.hours {
+  color: var(--sand-100);
+  font-size: 12px;
+  margin-top: 2px !important;
+  margin-bottom: 8px !important;
+}
+
+.footer-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 40px 0;
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.copyright {
+  font-size: 12px;
+  color: var(--sand-100);
+  margin: 0;
+  flex: 1;
+}
+
+.footer-badges {
+  display: flex;
+  gap: 15px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: rgba(217, 134, 61, 0.15);
+  color: var(--sun-500);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(217, 134, 61, 0.3);
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 40px 0 20px 0;
+    margin-top: 40px;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .copyright {
+    flex: none;
+  }
+
+  .footer-badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
