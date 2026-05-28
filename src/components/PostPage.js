@@ -4,6 +4,63 @@ import logger from '../utils/logger';
 import { useCar } from '../contexts/CarContext';
 import '../styles/PostPage.css';
 
+// Color key to display label mapping
+const COLOR_KEYS = [
+  { key: 'black', value: '黑色' },
+  { key: 'white', value: '白色' },
+  { key: 'silver', value: '銀色' },
+  { key: 'red', value: '紅色' },
+  { key: 'blue', value: '藍色' },
+  { key: 'gold', value: '金色' },
+  { key: 'brown', value: '棕色' },
+  { key: 'gray', value: '灰色' },
+];
+
+// Feature key to display label mapping
+const FEATURE_KEYS = [
+  { key: 'panoramicRoof', value: '全景天窗' },
+  { key: 'leatherSeats', value: '皮革座椅' },
+  { key: 'reverseCamera', value: '倒車影像' },
+  { key: 'cruiseControl', value: '定速巡航' },
+  { key: 'autoParking', value: '自動停車' },
+  { key: 'intelligentDrive', value: '智能駕駛' },
+  { key: 'airbags', value: '安全氣囊' },
+  { key: 'rearHeatedSeats', value: '後排座椅加熱' },
+];
+
+// Type key arrays for select options
+const CAR_TYPE_KEYS = [
+  { key: 'sedan', value: '轎車' },
+  { key: 'suv', value: 'SUV' },
+  { key: 'compact', value: '小型車' },
+  { key: 'hatchback', value: '掀背車' },
+  { key: 'sports', value: '跑車' },
+];
+
+const FUEL_TYPE_KEYS = [
+  { key: 'gasoline', value: '汽油' },
+  { key: 'diesel', value: '柴油' },
+  { key: 'hybrid', value: '油電' },
+  { key: 'ev', value: '純電' },
+  { key: 'gasoline_hybrid', value: '汽油/油電' },
+];
+
+const TRANSMISSION_KEYS = [
+  { key: 'mt', value: '手排' },
+  { key: 'at', value: '自排' },
+  { key: 'cvt', value: 'CVT' },
+];
+
+const CONDITION_KEYS = [
+  { key: 'excellent', value: '優' },
+  { key: 'good', value: '良' },
+  { key: 'fair', value: '尚可' },
+  { key: 'repairing', value: '維修中' },
+];
+
+const carBrands = ['Toyota', 'Honda', 'Mazda', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi', 'Lexus', 'Porsche', 'Volkswagen', 'Ford'];
+const cities = ['台北', '新北', '桃園', '新竹', '苗栗', '台中', '彰化', '南投', '嘉義', '台南', '高雄', '屏東', '宜蘭', '花蓮', '台東'];
+
 function PostPage() {
   const { t } = useTranslation();
   const { addNewCar, addUsedCar } = useCar();
@@ -67,25 +124,23 @@ function PostPage() {
     const maxFiles = 5;
     const maxSize = 5 * 1024 * 1024; // 5MB
 
-    // 驗證文件數量和大小
     const validFiles = files.filter((file) => {
       if (file.size > maxSize) {
-        alert(`檔案 ${file.name} 超過 5MB 限制`);
+        alert(`${file.name} ${t('post.fileSizeError')}`);
         return false;
       }
       if (!file.type.startsWith('image/')) {
-        alert(`${file.name} 不是有效的圖片格式`);
+        alert(`${file.name} ${t('post.fileTypeError')}`);
         return false;
       }
       return true;
     });
 
     if (imagePreviews.length + validFiles.length > maxFiles) {
-      alert(`最多只能上傳 ${maxFiles} 張圖片`);
+      alert(t('post.maxImagesError', { count: maxFiles }));
       return;
     }
 
-    // 生成預覽
     validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -94,7 +149,6 @@ function PostPage() {
       reader.readAsDataURL(file);
     });
 
-    // 存儲文件
     setFormData((prev) => ({
       ...prev,
       carImages: [...prev.carImages, ...validFiles],
@@ -112,29 +166,28 @@ function PostPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // 驗證所有必填欄位
     const errors = [];
     
-    if (!formData.brand) errors.push('請選擇品牌');
-    if (!formData.model) errors.push('請輸入車型');
-    if (!formData.type) errors.push('請選擇車型分類');
-    if (!formData.price) errors.push('請輸入價格');
-    if (!formData.fuel) errors.push('請選擇燃料類型');
-    if (!formData.transmission) errors.push('請選擇變速箱');
-    if (!formData.city) errors.push('請選擇地點');
+    if (!formData.brand) errors.push(t('post.validBrand'));
+    if (!formData.model) errors.push(t('post.validModel'));
+    if (!formData.type) errors.push(t('post.validType'));
+    if (!formData.price) errors.push(t('post.validPrice'));
+    if (!formData.fuel) errors.push(t('post.validFuel'));
+    if (!formData.transmission) errors.push(t('post.validTransmission'));
+    if (!formData.city) errors.push(t('post.validCity'));
     
     if (formData.carType === 'used' && !formData.condition) {
-      errors.push('請選擇車況');
+      errors.push(t('post.validCondition'));
     }
     
-    if (!formData.sellerName) errors.push('請輸入賣家姓名');
-    if (!formData.sellerPhone) errors.push('請輸入賣家電話');
+    if (!formData.sellerName) errors.push(t('post.validSellerName'));
+    if (!formData.sellerPhone) errors.push(t('post.validSellerPhone'));
     
     if (imageMode === 'upload' && (formData.carImages.length === 0 || imagePreviews.length === 0)) {
-      errors.push('必須上傳至少一張車輛圖片，或改用圖片網址');
+      errors.push(t('post.validImage'));
     }
     if (imageMode === 'url' && !imageUrl.trim()) {
-      errors.push('請輸入圖片網址');
+      errors.push(t('post.validImageUrl'));
     }
 
     if (errors.length > 0) {
@@ -143,7 +196,6 @@ function PostPage() {
       return;
     }
 
-    // 構建車輛數據
     const carData = {
       carType: formData.carType,
       brand: formData.brand,
@@ -163,7 +215,6 @@ function PostPage() {
       seller: formData.sellerName,
       phone: formData.sellerPhone,
       email: formData.sellerEmail || '',
-      // 圖片：優先使用 URL 模式，否則使用預設圖（Base64 太大不送到伺服器）
       image: imageMode === 'url' && imageUrl.trim()
         ? imageUrl.trim()
         : 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=80',
@@ -171,13 +222,11 @@ function PostPage() {
       imageUrlPreview: imageMode === 'url' ? imageUrl.trim() : (imagePreviews[0] || null),
     };
 
-    // 獲取登入的用戶 ID
     const userData = localStorage.getItem('user');
     const userId = userData ? JSON.parse(userData).id : null;
 
     setIsLoading(true);
 
-    // 發送到後端 API
     fetch('http://localhost:3001/api/cars', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -189,20 +238,17 @@ function PostPage() {
       .then(res => res.json())
       .then(data => {
         if (!data.success) {
-          alert('刊登失敗：' + (data.message || '未知錯誤'));
+          alert(t('post.postFail') + ': ' + (data.message || ''));
           setIsLoading(false);
           return;
         }
 
-        // 使用後端返回的完整車輛數據（包含真實數據庫 ID）更新本地 context
-        // 為了保持 ID 一致性，添加 1000000 前綴，並保存原始 _dbId
         if (formData.carType === 'new') {
           addNewCar({ ...data.car, id: 1000000 + data.car.id, _dbId: data.car.id });
         } else {
           addUsedCar({ ...data.car, id: 1000000 + data.car.id, _dbId: data.car.id });
         }
 
-        // 記錄表單提交
         logger.formSubmit('車輛刊登表單', {
           carType: formData.carType,
           brand: formData.brand,
@@ -214,7 +260,6 @@ function PostPage() {
           features: formData.features.length,
         });
 
-        // 提交成功
         setSubmitStatus('success');
         logger.info('車輛刊登成功');
         
@@ -250,19 +295,10 @@ function PostPage() {
       })
       .catch(error => {
         console.error('刊登失敗:', error);
-        alert('刊登失敗，請檢查連線並重試');
+        alert(t('post.postFail'));
         setIsLoading(false);
       });
   };
-
-  const carBrands = ['Toyota', 'Honda', 'Mazda', 'Nissan', 'BMW', 'Mercedes-Benz', 'Audi', 'Lexus', 'Porsche', 'Volkswagen', 'Ford', '其他'];
-  const carTypes = ['轎車', 'SUV', '小型車', '掀背車', '跑車', '休旅車'];
-  const fuelTypes = ['汽油', '柴油', '混合動力', '電動'];
-  const transmissions = ['手動', '自動', '無段變速'];
-  const conditions = ['優秀', '良好', '普通', '需要修復'];
-  const colorOptions = ['黑色', '白色', '銀色', '紅色', '藍色', '金色', '棕色', '灰色'];
-  const featuresList = ['全景天窗', '皮革座椅', '倒車影像', '定速巡航', '自動停車', '智能駕駛', '安全氣囊', '後排座椅加熱'];
-  const cities = ['台北', '新北', '桃園', '新竹', '苗栗', '台中', '彰化', '南投', '嘉義', '台南', '高雄', '屏東', '宜蘭', '花蓮', '台東'];
 
   return (
     <div className="post-page">
@@ -330,7 +366,7 @@ function PostPage() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="brand">品牌 *</label>
+                  <label htmlFor="brand">{t('post.brand')} *</label>
                   <select
                     id="brand"
                     name="brand"
@@ -338,30 +374,31 @@ function PostPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">請選擇品牌</option>
+                    <option value="">{t('post.selectBrand')}</option>
                     {carBrands.map((brand) => (
                       <option key={brand} value={brand}>
                         {brand}
                       </option>
                     ))}
+                    <option value="其他">{t('common.other')}</option>
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="model">車型 *</label>
+                  <label htmlFor="model">{t('post.model')} *</label>
                   <input
                     type="text"
                     id="model"
                     name="model"
                     value={formData.model}
                     onChange={handleChange}
-                    placeholder="如：Corolla Cross"
+                    placeholder={t('post.modelPlaceholder')}
                     required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="year">年份</label>
+                  <label htmlFor="year">{t('post.year')}</label>
                   <input
                     type="number"
                     id="year"
@@ -376,7 +413,7 @@ function PostPage() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="type">車型分類 *</label>
+                  <label htmlFor="type">{t('post.typeLabel')} *</label>
                   <select
                     id="type"
                     name="type"
@@ -384,17 +421,17 @@ function PostPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">請選擇</option>
-                    {carTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
+                    <option value="">{t('common.pleaseSelect')}</option>
+                    {CAR_TYPE_KEYS.map(({ key, value }) => (
+                      <option key={key} value={value}>
+                        {t(`types.${key}`)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="price">價格 (NT$) *</label>
+                  <label htmlFor="price">{t('post.price')} *</label>
                   <input
                     type="number"
                     id="price"
@@ -408,7 +445,7 @@ function PostPage() {
 
                 {formData.carType === 'used' && (
                   <div className="form-group">
-                    <label htmlFor="mileage">里程 (KM)</label>
+                    <label htmlFor="mileage">{t('post.mileage')}</label>
                     <input
                       type="number"
                       id="mileage"
@@ -423,7 +460,7 @@ function PostPage() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="fuel">燥料類型 *</label>
+                  <label htmlFor="fuel">{t('post.fuel')} *</label>
                   <select
                     id="fuel"
                     name="fuel"
@@ -431,17 +468,17 @@ function PostPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">請選擇</option>
-                    {fuelTypes.map((fuel) => (
-                      <option key={fuel} value={fuel}>
-                        {fuel}
+                    <option value="">{t('common.pleaseSelect')}</option>
+                    {FUEL_TYPE_KEYS.map(({ key, value }) => (
+                      <option key={key} value={value}>
+                        {t(`fuels.${key}`)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="transmission">變速箱 *</label>
+                  <label htmlFor="transmission">{t('post.transmission')} *</label>
                   <select
                     id="transmission"
                     name="transmission"
@@ -449,17 +486,17 @@ function PostPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">請選擇</option>
-                    {transmissions.map((trans) => (
-                      <option key={trans} value={trans}>
-                        {trans}
+                    <option value="">{t('common.pleaseSelect')}</option>
+                    {TRANSMISSION_KEYS.map(({ key, value }) => (
+                      <option key={key} value={value}>
+                        {t(`transmissions.${key}`)}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="engine">引擎</label>
+                  <label htmlFor="engine">{t('post.engine')}</label>
                   <input
                     type="text"
                     id="engine"
@@ -473,7 +510,7 @@ function PostPage() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="city">地點 *</label>
+                  <label htmlFor="city">{t('post.city')} *</label>
                   <select
                     id="city"
                     name="city"
@@ -481,7 +518,7 @@ function PostPage() {
                     onChange={handleChange}
                     required
                   >
-                    <option value="">請選擇城市</option>
+                    <option value="">{t('post.selectCity')}</option>
                     {cities.map((city) => (
                       <option key={city} value={city}>
                         {city}
@@ -492,7 +529,7 @@ function PostPage() {
 
                 {formData.carType === 'used' && (
                   <div className="form-group">
-                    <label htmlFor="condition">車況 *</label>
+                    <label htmlFor="condition">{t('post.condition')} *</label>
                     <select
                       id="condition"
                       name="condition"
@@ -500,10 +537,10 @@ function PostPage() {
                       onChange={handleChange}
                       required
                     >
-                      <option value="">請選擇</option>
-                      {conditions.map((cond) => (
-                        <option key={cond} value={cond}>
-                          {cond}
+                      <option value="">{t('common.pleaseSelect')}</option>
+                      {CONDITION_KEYS.map(({ key, value }) => (
+                        <option key={key} value={value}>
+                          {t(`conditions.${key}`)}
                         </option>
                       ))}
                     </select>
@@ -514,50 +551,50 @@ function PostPage() {
 
             {/* 車輛特徵 */}
             <div className="form-section">
-              <h2>車輛特徵</h2>
+              <h2>{t('post.vehicleFeatures')}</h2>
 
               <div className="form-group">
-                <label>顏色</label>
+                <label>{t('post.colors')}</label>
                 <div className="checkbox-grid">
-                  {colorOptions.map((color) => (
-                    <label key={color} className="checkbox-label">
+                  {COLOR_KEYS.map(({ key, value }) => (
+                    <label key={key} className="checkbox-label">
                       <input
                         type="checkbox"
-                        value={color}
-                        checked={formData.colors.includes(color)}
+                        value={value}
+                        checked={formData.colors.includes(value)}
                         onChange={(e) => handleCheckboxChange(e, 'colors')}
                       />
-                      {color}
+                      {t(`colors.${key}`)}
                     </label>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label>主要配置</label>
+                <label>{t('post.features')}</label>
                 <div className="checkbox-grid">
-                  {featuresList.map((feature) => (
-                    <label key={feature} className="checkbox-label">
+                  {FEATURE_KEYS.map(({ key, value }) => (
+                    <label key={key} className="checkbox-label">
                       <input
                         type="checkbox"
-                        value={feature}
-                        checked={formData.features.includes(feature)}
+                        value={value}
+                        checked={formData.features.includes(value)}
                         onChange={(e) => handleCheckboxChange(e, 'features')}
                       />
-                      {feature}
+                      {t(`carFeatures.${key}`)}
                     </label>
                   ))}
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="description">車輛說明</label>
+                <label htmlFor="description">{t('post.description')}</label>
                 <textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="請詳細描述您的車輛狀況、保養情況等..."
+                  placeholder={t('post.descriptionPlaceholder')}
                   rows="6"
                 ></textarea>
               </div>
@@ -565,8 +602,8 @@ function PostPage() {
 
             {/* 車輛圖片 */}
             <div className="form-section post-image-section">
-              <h2>車輛圖片 *</h2>
-              <p className="form-hint">上傳本地圖片或貼上圖片網址，至少提供一種</p>
+              <h2>{t('post.vehicleImages')} *</h2>
+              <p className="form-hint">{t('post.imageHint')}</p>
 
               {/* 切換分頁 */}
               <div className="image-mode-tabs">
@@ -575,14 +612,14 @@ function PostPage() {
                   className={`image-tab ${imageMode === 'upload' ? 'active' : ''}`}
                   onClick={() => setImageMode('upload')}
                 >
-                  📁 上傳圖片
+                  {t('post.uploadTab')}
                 </button>
                 <button
                   type="button"
                   className={`image-tab ${imageMode === 'url' ? 'active' : ''}`}
                   onClick={() => setImageMode('url')}
                 >
-                  🔗 圖片網址
+                  {t('post.urlTab')}
                 </button>
               </div>
 
@@ -590,7 +627,7 @@ function PostPage() {
               {imageMode === 'upload' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="carImages">選擇圖片（最多 5 張，每張不超過 5MB）</label>
+                    <label htmlFor="carImages">{t('post.imageSelectLabel')}</label>
                     <input
                       type="file"
                       id="carImages"
@@ -604,7 +641,7 @@ function PostPage() {
 
                   {imagePreviews.length > 0 && (
                     <div className="image-preview-container">
-                      <h3>圖片預覽 ({imagePreviews.length}/5)</h3>
+                      <h3>{t('post.imagePreviewTitle')} ({imagePreviews.length}/5)</h3>
                       <div className="image-preview-grid">
                         {imagePreviews.map((preview, index) => (
                           <div key={index} className="image-preview-item">
@@ -628,7 +665,7 @@ function PostPage() {
               {imageMode === 'url' && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="imageUrl">圖片網址</label>
+                    <label htmlFor="imageUrl">{t('post.url')}</label>
                     <input
                       type="url"
                       id="imageUrl"
@@ -646,7 +683,7 @@ function PostPage() {
                       <div className="image-preview-box">
                         <img
                           src={imageUrlPreview}
-                          alt="圖片網址預覽"
+                          alt={t('post.imagePreviewAlt')}
                           className="image-preview-img"
                           onError={() => setImageUrlPreview(null)}
                         />
@@ -654,22 +691,22 @@ function PostPage() {
                           type="button"
                           className="btn-remove-img"
                           onClick={() => { setImageUrl(''); setImageUrlPreview(null); }}
-                          title="清除"
+                          title={t('post.clearImage')}
                         >
                           ✕
                         </button>
                       </div>
-                      <p className="image-preview-hint">圖片網址預覽</p>
+                      <p className="image-preview-hint">{t('post.imagePreviewAlt')}</p>
                     </div>
                   ) : imageUrl ? (
                     <div className="image-placeholder">
                       <span className="image-placeholder-icon">⚠️</span>
-                      <p>無法載入此圖片，請確認網址是否正確</p>
+                      <p>{t('post.imageLoadError')}</p>
                     </div>
                   ) : (
                     <div className="image-placeholder">
                       <span className="image-placeholder-icon">🖼️</span>
-                      <p>輸入網址後將顯示預覽</p>
+                      <p>{t('post.imageUrlPrompt')}</p>
                     </div>
                   )}
                 </>
@@ -678,24 +715,24 @@ function PostPage() {
 
             {/* 賣家信息 */}
             <div className="form-section">
-              <h2>賣家信息</h2>
+              <h2>{t('post.sellerInfo')}</h2>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="sellerName">姓名 *</label>
+                  <label htmlFor="sellerName">{t('post.sellerName')} *</label>
                   <input
                     type="text"
                     id="sellerName"
                     name="sellerName"
                     value={formData.sellerName}
                     onChange={handleChange}
-                    placeholder="請輸入您的姓名"
+                    placeholder={t('post.sellerNamePlaceholder')}
                     required
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="sellerPhone">電話 *</label>
+                  <label htmlFor="sellerPhone">{t('post.sellerPhone')} *</label>
                   <input
                     type="tel"
                     id="sellerPhone"
@@ -709,24 +746,24 @@ function PostPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="sellerEmail">電子郵件</label>
+                <label htmlFor="sellerEmail">{t('post.sellerEmail')}</label>
                 <input
                   type="email"
                   id="sellerEmail"
                   name="sellerEmail"
                   value={formData.sellerEmail}
                   onChange={handleChange}
-                  placeholder="您的電子郵件"
+                  placeholder={t('post.sellerEmailPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="form-actions">
               <button type="submit" className="btn-submit" disabled={isLoading}>
-                {isLoading ? '刊登中...' : '立即刊登'}
+                {isLoading ? t('post.posting') : t('post.postNow')}
               </button>
               <p className="form-note">
-                💡 提示：完整的車輛信息能幫助您吸引更多買家。請盡可能詳細填寫。
+                {t('post.postTip')}
               </p>
             </div>
           </form>
@@ -736,27 +773,27 @@ function PostPage() {
       {/* 優勢說明 */}
       <section className="post-benefits">
         <div className="container">
-          <h2>為什麼選擇好車平台刊登？</h2>
+          <h2>{t('post.whyTitle')}</h2>
           <div className="benefits-grid">
             <div className="benefit-card">
               <div className="benefit-icon">✓</div>
-              <h3>完全免費</h3>
-              <p>刊登、編輯、延長都完全免費，無隱藏費用</p>
+              <h3>{t('post.benefit1Title')}</h3>
+              <p>{t('post.benefit1Desc')}</p>
             </div>
             <div className="benefit-card">
               <div className="benefit-icon">✓</div>
-              <h3>快速成交</h3>
-              <p>龐大買家群體，平均 14 天內成交</p>
+              <h3>{t('post.benefit2Title')}</h3>
+              <p>{t('post.benefit2Desc')}</p>
             </div>
             <div className="benefit-card">
               <div className="benefit-icon">✓</div>
-              <h3>專業服務</h3>
-              <p>24/7 客服支持，協助您完成交易</p>
+              <h3>{t('post.benefit3Title')}</h3>
+              <p>{t('post.benefit3Desc')}</p>
             </div>
             <div className="benefit-card">
               <div className="benefit-icon">✓</div>
-              <h3>安全交易</h3>
-              <p>提供購車保障和完整的交易文件協助</p>
+              <h3>{t('post.benefit4Title')}</h3>
+              <p>{t('post.benefit4Desc')}</p>
             </div>
           </div>
         </div>

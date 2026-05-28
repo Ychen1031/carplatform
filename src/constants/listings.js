@@ -5,8 +5,8 @@ export const INITIAL_LISTINGS = getInitialListings();
 
 export const EMPTY_FORM_STATE = {
   title: '',
-  brand: '全部',
-  city: '全部',
+  brand: '',
+  city: '',
   year: '',
   mileage: '',
   fuel: '汽油',

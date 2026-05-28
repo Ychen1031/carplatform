@@ -3,11 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCar } from '../contexts/CarContext';
 import { useToast } from '../contexts/ToastContext';
+import { CITY_KEY_MAP } from '../utils/localeMaps';
 import '../styles/MyListingsPage.css';
 
 function MyListingsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const localizeCity = (city) => {
+    if (!city) return '';
+    const key = CITY_KEY_MAP[city] || city;
+    return t(`cities.${key}`, { defaultValue: city });
+  };
   const { deleteCar } = useCar();
   const { showToast } = useToast();
   const [listings, setListings] = useState([]);
@@ -205,7 +212,7 @@ function MyListingsPage() {
                       </div>
                       <div className="info-row">
                         <span className="label">{t('myListings.city')}</span>
-                        <span className="value">{car.city}</span>
+                        <span className="value">{localizeCity(car.city)}</span>
                       </div>
                       <div className="info-row">
                         <span className="label">{t('myListings.mileage')}</span>

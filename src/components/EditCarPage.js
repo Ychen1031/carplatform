@@ -107,7 +107,7 @@ function EditCarPage() {
     };
 
     fetchCar();
-  }, [dbCarId, navigate, showToast]);
+  }, [dbCarId, navigate, showToast, t]);
 
   // 表單輸入改變
   const handleInputChange = (e) => {
@@ -184,12 +184,12 @@ function EditCarPage() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title.trim()) newErrors.title = '標題為必填';
-    if (!formData.brand) newErrors.brand = '品牌為必填';
-    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = '價格為必填且需大於 0';
-    if (!formData.seller.trim()) newErrors.seller = '賣家名稱為必填';
-    if (!formData.phone.trim()) newErrors.phone = '電話為必填';
-    if (!formData.city) newErrors.city = '城市為必填';
+    if (!formData.title.trim()) newErrors.title = t('editCar.titleField') + ' ' + t('post.validBrand').split('請')[0];
+    if (!formData.brand) newErrors.brand = t('post.validBrand');
+    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = t('post.validPrice');
+    if (!formData.seller.trim()) newErrors.seller = t('post.validSellerName');
+    if (!formData.phone.trim()) newErrors.phone = t('post.validSellerPhone');
+    if (!formData.city) newErrors.city = t('post.validCity');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -201,7 +201,7 @@ function EditCarPage() {
 
     if (!validateForm()) {
       if (showToast && typeof showToast === 'function') {
-        showToast('請填完所有必填欄位', 'error');
+        showToast(t('editCar.save'), 'error');
       }
       return;
     }
@@ -229,18 +229,18 @@ function EditCarPage() {
         const updatedCar = { ...data.car, id: 1000000 + data.car.id, _dbId: data.car.id };
         updateCar(updatedCar);
         if (showToast && typeof showToast === 'function') {
-          showToast('車輛資訊已成功更新', 'success');
+          showToast(t('editProfile.updated'), 'success');
         }
         navigate('/my-listings');
       } else {
         if (showToast && typeof showToast === 'function') {
-          showToast(data.message || '更新失敗', 'error');
+          showToast(data.message || t('messages.errorLoad'), 'error');
         }
       }
     } catch (error) {
       console.error('更新失敗:', error);
       if (showToast && typeof showToast === 'function') {
-        showToast('更新失敗，請稍後再試', 'error');
+        showToast(t('editCar.saving'), 'error');
       }
     } finally {
       setIsSaving(false);
@@ -250,7 +250,7 @@ function EditCarPage() {
   if (isLoading) {
     return (
       <div className="edit-car-page">
-        <div className="loading">載入中...</div>
+        <div className="loading">{t('editCar.loading')}</div>
       </div>
     );
   }
@@ -259,19 +259,19 @@ function EditCarPage() {
     <div className="edit-car-page">
       <div className="edit-car-container">
         <div className="edit-car-header">
-          <h1>編輯車輛資訊</h1>
+          <h1>{t('editCar.title')}</h1>
           <button className="btn-back" onClick={() => navigate('/my-listings')}>
-            返回
+            {t('editCar.back')}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="edit-car-form">
           <div className="form-section">
-            <h2>基本資訊</h2>
+            <h2>{t('editCar.basicInfo')}</h2>
 
             <div className="form-group">
               <label>
-                標題 <span className="required">*</span>
+                {t('editCar.titleField')} <span className="required">*</span>
                 {errors.title && <span className="error-text">{errors.title}</span>}
               </label>
               <input
@@ -279,7 +279,7 @@ function EditCarPage() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                placeholder="例如：Toyota Corolla 2021 自排"
+                placeholder="Toyota Corolla 2021"
                 className={errors.title ? 'input-error' : ''}
               />
             </div>
@@ -287,21 +287,21 @@ function EditCarPage() {
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  車輛類型 <span className="required">*</span>
+                  {t('post.carType')} <span className="required">*</span>
                 </label>
                 <select name="carType" value={formData.carType} onChange={handleInputChange}>
-                  <option value="used">中古車</option>
-                  <option value="new">新車</option>
+                  <option value="used">{t('post.usedCar')}</option>
+                  <option value="new">{t('post.newCar')}</option>
                 </select>
               </div>
 
               <div className="form-group">
                 <label>
-                  品牌 <span className="required">*</span>
+                  {t('editCar.brand')} <span className="required">*</span>
                   {errors.brand && <span className="error-text">{errors.brand}</span>}
                 </label>
                 <select name="brand" value={formData.brand} onChange={handleInputChange} className={errors.brand ? 'input-error' : ''}>
-                  <option value="">選擇品牌</option>
+                  <option value="">{t('post.selectBrand')}</option>
                   <option value="Toyota">Toyota</option>
                   <option value="Honda">Honda</option>
                   <option value="Mazda">Mazda</option>
@@ -317,19 +317,19 @@ function EditCarPage() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>型號</label>
+                <label>{t('post.model')}</label>
                 <input
                   type="text"
                   name="model"
                   value={formData.model}
                   onChange={handleInputChange}
-                  placeholder="例如：Corolla"
+                  placeholder="Corolla"
                 />
               </div>
 
               <div className="form-group">
                 <label>
-                  年份 <span className="required">*</span>
+                  {t('post.year')} <span className="required">*</span>
                 </label>
                 <input
                   type="number"
@@ -345,11 +345,11 @@ function EditCarPage() {
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  城市 <span className="required">*</span>
+                  {t('editCar.city')} <span className="required">*</span>
                   {errors.city && <span className="error-text">{errors.city}</span>}
                 </label>
                 <select name="city" value={formData.city} onChange={handleInputChange} className={errors.city ? 'input-error' : ''}>
-                  <option value="">選擇城市</option>
+                  <option value="">{t('post.selectCity')}</option>
                   <option value="台北">台北</option>
                   <option value="新北">新北</option>
                   <option value="桃園">桃園</option>
@@ -362,27 +362,27 @@ function EditCarPage() {
 
               <div className="form-group">
                 <label>
-                  類型
+                  {t('post.typeLabel')}
                 </label>
                 <select name="type" value={formData.type} onChange={handleInputChange}>
-                  <option value="">選擇類型</option>
-                  <option value="轎車">轎車</option>
-                  <option value="休旅車">休旅車</option>
-                  <option value="貨車">貨車</option>
-                  <option value="跑車">跑車</option>
-                  <option value="其他">其他</option>
+                  <option value="">{t('post.selectType')}</option>
+                  <option value="轎車">{t('types.sedan')}</option>
+                  <option value="休旅車">{t('types.suv')}</option>
+                  <option value="貨車">{t('types.truck')}</option>
+                  <option value="跑車">{t('types.sports')}</option>
+                  <option value="其他">{t('types.other')}</option>
                 </select>
               </div>
             </div>
           </div>
 
           <div className="form-section">
-            <h2>車輛規格</h2>
+            <h2>{t('editCar.basicInfo')}</h2>
 
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  價格 (元) <span className="required">*</span>
+                  {t('editCar.price')} <span className="required">*</span>
                   {errors.price && <span className="error-text">{errors.price}</span>}
                 </label>
                 <input
@@ -397,7 +397,7 @@ function EditCarPage() {
               </div>
 
               <div className="form-group">
-                <label>里程數 (公里)</label>
+                <label>{t('post.mileage')}</label>
                 <input
                   type="number"
                   name="mileage"
@@ -411,103 +411,116 @@ function EditCarPage() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>燃油類型</label>
+                <label>{t('post.fuel')}</label>
                 <select name="fuel" value={formData.fuel} onChange={handleInputChange}>
-                  <option value="">選擇燃油類型</option>
-                  <option value="汽油">汽油</option>
-                  <option value="柴油">柴油</option>
-                  <option value="混合動力">混合動力</option>
-                  <option value="電動">電動</option>
-                  <option value="其他">其他</option>
+                  <option value="">{t('post.selectFuel')}</option>
+                  <option value="汽油">{t('fuels.gasoline')}</option>
+                  <option value="柴油">{t('fuels.diesel')}</option>
+                  <option value="油電">{t('fuels.hybrid')}</option>
+                  <option value="純電">{t('fuels.ev')}</option>
+                  <option value="其他">{t('fuels.other')}</option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label>變速箱</label>
+                <label>{t('post.transmission')}</label>
                 <select name="transmission" value={formData.transmission} onChange={handleInputChange}>
-                  <option value="">選擇變速箱</option>
-                  <option value="手動">手動</option>
-                  <option value="自動">自動</option>
-                  <option value="無段">無段</option>
+                  <option value="">{t('post.selectTransmission')}</option>
+                  <option value="手排">{t('transmissions.mt')}</option>
+                  <option value="自排">{t('transmissions.at')}</option>
+                  <option value="CVT">{t('transmissions.cvt')}</option>
                 </select>
               </div>
             </div>
 
             <div className="form-group">
-              <label>引擎排氣量</label>
+              <label>{t('post.engine')}</label>
               <input
                 type="text"
                 name="engine"
                 value={formData.engine}
                 onChange={handleInputChange}
-                placeholder="例如：1600cc"
+                placeholder="1600cc"
               />
             </div>
           </div>
 
           <div className="form-section">
-            <h2>外觀顏色</h2>
+            <h2>{t('post.colors')}</h2>
             <div className="checkbox-group">
-              {['黑色', '白色', '銀色', '紅色', '藍色', '灰色'].map(color => (
-                <label key={color} className="checkbox-label">
+              {[
+                { key: 'black', value: '黑色' },
+                { key: 'white', value: '白色' },
+                { key: 'silver', value: '銀色' },
+                { key: 'red', value: '紅色' },
+                { key: 'blue', value: '藍色' },
+                { key: 'gray', value: '灰色' },
+              ].map(({ key, value }) => (
+                <label key={key} className="checkbox-label">
                   <input
                     type="checkbox"
-                    value={color}
-                    checked={formData.colors.includes(color)}
+                    value={value}
+                    checked={formData.colors.includes(value)}
                     onChange={(e) => handleCheckboxChange(e, 'colors')}
                   />
-                  {color}
+                  {t(`colors.${key}`)}
                 </label>
               ))}
             </div>
           </div>
 
           <div className="form-section">
-            <h2>車輛特色</h2>
+            <h2>{t('post.features')}</h2>
             <div className="checkbox-group">
-              {['天窗', '皮椅', '倒車雷達', '定速巡航', '導航系統', 'Bluetooth'].map(feature => (
-                <label key={feature} className="checkbox-label">
+              {[
+                { key: 'panoramicRoof', value: '全景天窗' },
+                { key: 'leatherSeats', value: '皮革座椅' },
+                { key: 'reverseCamera', value: '倒車影像' },
+                { key: 'cruiseControl', value: '定速巡航' },
+                { key: 'intelligentDrive', value: '智能駕駛' },
+              ].map(({ key, value }) => (
+                <label key={key} className="checkbox-label">
                   <input
                     type="checkbox"
-                    value={feature}
-                    checked={formData.features.includes(feature)}
+                    value={value}
+                    checked={formData.features.includes(value)}
                     onChange={(e) => handleCheckboxChange(e, 'features')}
                   />
-                  {feature}
+                  {t(`carFeatures.${key}`)}
                 </label>
               ))}
             </div>
           </div>
 
           <div className="form-section">
-            <h2>車況與描述</h2>
+            <h2>{t('post.condition')} &amp; {t('post.description')}</h2>
 
             <div className="form-group">
-              <label>車況</label>
+              <label>{t('post.condition')}</label>
               <select name="condition" value={formData.condition} onChange={handleInputChange}>
-                <option value="">選擇車況</option>
-                <option value="優">優</option>
-                <option value="良">良</option>
-                <option value="尚可">尚可</option>
-                <option value="維修中">維修中</option>
+                <option value="">{t('post.selectCondition')}</option>
+                <option value="優">{t('conditions.excellent')}</option>
+                <option value="良">{t('conditions.good')}</option>
+                <option value="尚可">{t('conditions.fair')}</option>
+                <option value="維修中">{t('conditions.repairing')}</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>描述</label>
+              <label>{t('post.description')}</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="詳細描述車輛狀況、特點等..."
+                placeholder={t('post.descriptionPlaceholder')}
                 rows="5"
               />
             </div>
           </div>
 
           <div className="form-section image-section">
-            <h2>車輛圖片</h2>
-            <p className="form-hint">可上傳本地圖片或輸入圖片網址，建議使用清晰的車輛照片</p>
+            <h2>{t('post.vehicleImages')}</h2>
+            <p className="form-hint">{t('post.imageHint')}</p>
 
             <div className="image-mode-tabs">
               <button
@@ -515,20 +528,20 @@ function EditCarPage() {
                 className={`image-tab ${imageMode === 'url' ? 'active' : ''}`}
                 onClick={() => setImageMode('url')}
               >
-                🔗 圖片網址
+                {t('post.urlTab')}
               </button>
               <button
                 type="button"
                 className={`image-tab ${imageMode === 'upload' ? 'active' : ''}`}
                 onClick={() => setImageMode('upload')}
               >
-                📁 上傳圖片
+                {t('post.uploadTab')}
               </button>
             </div>
 
             {imageMode === 'url' ? (
               <div className="form-group">
-                <label>圖片網址</label>
+                <label>{t('post.url')}</label>
                 <input
                   type="url"
                   name="image"
@@ -539,7 +552,7 @@ function EditCarPage() {
               </div>
             ) : (
               <div className="form-group">
-                <label>選擇圖片（最大 5MB）</label>
+                <label>{t('post.imageSelectLabel')}</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -554,7 +567,7 @@ function EditCarPage() {
                 <div className="image-preview-box">
                   <img
                     src={imagePreview}
-                    alt="車輛圖片預覽"
+                    alt={t('post.imagePreviewAlt')}
                     className="image-preview-img"
                     onError={() => setImagePreview(null)}
                   />
@@ -562,28 +575,28 @@ function EditCarPage() {
                     type="button"
                     className="btn-remove-img"
                     onClick={handleRemoveImage}
-                    title="移除圖片"
+                    title={t('post.clearImage')}
                   >
                     ✕
                   </button>
                 </div>
-                <p className="image-preview-hint">目前圖片預覽</p>
+                <p className="image-preview-hint">{t('post.imagePreviewAlt')}</p>
               </div>
             ) : (
               <div className="image-placeholder">
                 <span className="image-placeholder-icon">🖼️</span>
-                <p>尚未設定圖片</p>
+                <p>{t('post.imageUrlPrompt')}</p>
               </div>
             )}
           </div>
 
           <div className="form-section">
-            <h2>賣家資訊</h2>
+            <h2>{t('post.sellerInfo')}</h2>
 
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  名稱 <span className="required">*</span>
+                  {t('editCar.seller')} <span className="required">*</span>
                   {errors.seller && <span className="error-text">{errors.seller}</span>}
                 </label>
                 <input
@@ -597,7 +610,7 @@ function EditCarPage() {
 
               <div className="form-group">
                 <label>
-                  電話 <span className="required">*</span>
+                  {t('editCar.phone')} <span className="required">*</span>
                   {errors.phone && <span className="error-text">{errors.phone}</span>}
                 </label>
                 <input
@@ -611,7 +624,7 @@ function EditCarPage() {
             </div>
 
             <div className="form-group">
-              <label>電子郵件</label>
+              <label>{t('contact.email')}</label>
               <input
                 type="email"
                 name="email"
@@ -623,10 +636,10 @@ function EditCarPage() {
 
           <div className="form-actions">
             <button type="button" className="btn-cancel" onClick={() => navigate('/my-listings')}>
-              取消
+              {t('common.cancel')}
             </button>
             <button type="submit" className="btn-save" disabled={isSaving}>
-              {isSaving ? '保存中...' : '保存變更'}
+              {isSaving ? t('editCar.saving') : t('editCar.save')}
             </button>
           </div>
         </form>

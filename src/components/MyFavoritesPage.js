@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TYPE_KEY_MAP, FUEL_KEY_MAP, TRANSMISSION_KEY_MAP, CITY_KEY_MAP } from '../utils/localeMaps';
 import '../styles/MyFavoritesPage.css';
 import { NEW_CARS_DATA } from '../constants/newCarsData';
 import { USED_CARS_DATA } from '../constants/usedCarsData';
@@ -96,6 +97,18 @@ function MyFavoritesPage() {
     }
   };
 
+    const localize = (ns, raw) => {
+      if (!raw || raw === '') return t('common.all');
+      const keyMap = 
+        ns === 'types' ? TYPE_KEY_MAP : 
+        ns === 'fuels' ? FUEL_KEY_MAP : 
+        ns === 'transmissions' ? TRANSMISSION_KEY_MAP : 
+        ns === 'cities' ? CITY_KEY_MAP : 
+        undefined;
+      const key = keyMap ? (keyMap[raw] || raw) : raw;
+      return t(`${ns}.${key}`, { defaultValue: raw });
+    };
+
   return (
     <div className="my-favorites-page">
       <div className="favorites-container">
@@ -125,7 +138,7 @@ function MyFavoritesPage() {
                       <div className="card-info">
                         <h3>{car.title}</h3>
                         <p className="car-specs">
-                          {car.year} • {car.type} • {car.transmission}
+                          {car.year} • {localize('types', car.type)} • {localize('transmissions', car.transmission)}
                         </p>
                         <div className="card-details">
                           <div className="detail-item">
@@ -134,7 +147,7 @@ function MyFavoritesPage() {
                           </div>
                           <div className="detail-item">
                             <span>燃料</span>
-                            <span>{car.fuel}</span>
+                            <span>{localize('fuels', car.fuel)}</span>
                           </div>
                         </div>
                         <p className="price">NT$ {car.price.toLocaleString()}</p>
@@ -172,7 +185,7 @@ function MyFavoritesPage() {
                       <div className="card-info">
                         <h3>{car.title}</h3>
                         <p className="car-specs">
-                          {car.year} • {car.type} • {car.transmission}
+                          {car.year} • {localize('types', car.type)} • {localize('transmissions', car.transmission)}
                         </p>
                         <div className="card-details">
                           <div className="detail-item">
@@ -181,7 +194,7 @@ function MyFavoritesPage() {
                           </div>
                           <div className="detail-item">
                             <span>城市</span>
-                            <span>{car.city}</span>
+                            <span>{localize('cities', car.city)}</span>
                           </div>
                         </div>
                         <p className="price">NT$ {car.price.toLocaleString()}</p>
@@ -231,15 +244,15 @@ function MyFavoritesPage() {
                       </div>
                       <div className="info-item">
                         <span className="label">{t('favorites.model')}</span>
-                        <span className="value">{selectedCar.type}</span>
+                        <span className="value">{localize('types', selectedCar.type)}</span>
                       </div>
                       <div className="info-item">
                         <span className="label">{t('favorites.fuel')}</span>
-                        <span className="value">{selectedCar.fuel}</span>
+                        <span className="value">{localize('fuels', selectedCar.fuel)}</span>
                       </div>
                       <div className="info-item">
                         <span className="label">{t('favorites.transmission')}</span>
-                        <span className="value">{selectedCar.transmission}</span>
+                        <span className="value">{localize('transmissions', selectedCar.transmission)}</span>
                       </div>
                       <div className="info-item">
                         <span className="label">{t('favorites.engine')}</span>

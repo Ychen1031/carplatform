@@ -7,7 +7,7 @@ import { useFavoritesPersist } from '../hooks/useFavoritesPersist';
 import { INITIAL_LISTINGS } from '../constants/listings';
 import { NEW_CAR_BRANDS } from '../constants/brands';
 
-const ALL_OPTION = '全部';
+const ALL_OPTION = '';
 
 function HomePage() {
   const { state, setFilters, setSort, setActiveContact } = useCar();
@@ -29,12 +29,12 @@ function HomePage() {
   const { filters, sortBy, activeContactId } = state;
 
   const allBrands = useMemo(
-    () => [ALL_OPTION, ...new Set(allListings.map((item) => item.brand))],
+    () => [...new Set(allListings.map((item) => item.brand))],
     [allListings]
   );
 
   const allCities = useMemo(
-    () => [ALL_OPTION, ...new Set(allListings.map((item) => item.city))],
+    () => [...new Set(allListings.map((item) => item.city))],
     [allListings]
   );
 
@@ -54,8 +54,8 @@ function HomePage() {
           filters.maxPrice === '' || car.price <= Number(filters.maxPrice);
         const yearMatch =
           filters.minYear === '' || car.year >= Number(filters.minYear);
-        const brandMatch = filters.brand === ALL_OPTION || car.brand === filters.brand;
-        const cityMatch = filters.city === ALL_OPTION || car.city === filters.city;
+        const brandMatch = filters.brand === '' || car.brand === filters.brand;
+        const cityMatch = filters.city === '' || car.city === filters.city;
 
         return keywordMatch && priceMatch && yearMatch && brandMatch && cityMatch;
       })

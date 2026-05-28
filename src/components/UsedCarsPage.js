@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Row, Col, Card, Button, Input, Select, Modal, Form, Empty, Space, Tag, Drawer } from 'antd';
 import { HeartOutlined, HeartFilled, PhoneOutlined, CarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { TYPE_KEY_MAP, FUEL_KEY_MAP, TRANSMISSION_KEY_MAP, CITY_KEY_MAP } from '../utils/localeMaps';
 import { NEW_CAR_BRANDS } from '../constants/brands';
 import { USED_CARS_DATA } from '../constants/usedCarsData';
 import { useCar } from '../contexts/CarContext';
@@ -10,7 +11,7 @@ import '../styles/NewCarsPage.css';
 import '../styles/UsedCarsPage.css';
 
 function UsedCarsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { success } = useToast();
   const { state, toggleFavorite } = useCar();
   // 為靜態中古車數據添加 ID 前綴以避免與後端數據衝突
@@ -22,11 +23,11 @@ function UsedCarsPage() {
   const allCars = useMemo(() => [...staticUsedCars, ...state.usedCars], [staticUsedCars, state.usedCars]);
   const [filters, setFilters] = useState({
     keyword: '',
-    brand: '全部',
-    type: '全部',
-    city: '全部',
+    brand: '',
+    type: '',
+    city: '',
     priceRange: '',
-    fuel: '全部',
+    fuel: '',
   });
   const [selectedCar, setSelectedCar] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -53,22 +54,22 @@ function UsedCarsPage() {
   const isFavorited = (carId) => state.favorites.includes(String(carId));
 
   const allBrands = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.brand))],
+    () => [...new Set(allCars.map((car) => car.brand))],
     [allCars]
   );
 
   const carTypes = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.type))],
+    () => [...new Set(allCars.map((car) => car.type))],
     [allCars]
   );
 
   const fuelTypes = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.fuel))],
+    () => [...new Set(allCars.map((car) => car.fuel))],
     [allCars]
   );
 
   const allCities = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.city))],
+    () => [...new Set(allCars.map((car) => car.city))],
     [allCars]
   );
 
@@ -76,10 +77,10 @@ function UsedCarsPage() {
     const keyword = filters.keyword.trim().toLowerCase();
     return allCars.filter((car) => {
       const keywordMatch = keyword.length === 0 || car.title.toLowerCase().includes(keyword) || car.brand.toLowerCase().includes(keyword);
-      const brandMatch = filters.brand === '全部' || car.brand === filters.brand;
-      const typeMatch = filters.type === '全部' || car.type === filters.type;
-      const fuelMatch = filters.fuel === '全部' || car.fuel === filters.fuel;
-      const cityMatch = filters.city === '全部' || car.city === filters.city;
+      const brandMatch = filters.brand === '' || car.brand === filters.brand;
+      const typeMatch = filters.type === '' || car.type === filters.type;
+      const fuelMatch = filters.fuel === '' || car.fuel === filters.fuel;
+      const cityMatch = filters.city === '' || car.city === filters.city;
 
       let priceMatch = true;
       if (filters.priceRange === '0-100') {
@@ -94,6 +95,22 @@ function UsedCarsPage() {
     });
   }, [filters, allCars]);
 
+  const localize = (ns, raw) => {
+    if (!raw || raw === '') return t('common.all');
+    const keyMap = 
+      ns === 'types' ? TYPE_KEY_MAP : 
+      ns === 'fuels' ? FUEL_KEY_MAP : 
+      ns === 'transmissions' ? TRANSMISSION_KEY_MAP : 
+      ns === 'cities' ? CITY_KEY_MAP : 
+      undefined;
+    const key = keyMap ? (keyMap[raw] || raw) : raw;
+    const result = t(`${ns}.${key}`, { defaultValue: raw });
+    if (ns === 'cities') {
+      console.log('[UsedCarsPage] localize city:', { raw, key, result, lang: i18n.language });
+    }
+    return result;
+  };
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -104,7 +121,7 @@ function UsedCarsPage() {
     if (brand.name !== selectedBrand?.name) {
       setFilters((prev) => ({ ...prev, brand: brand.name }));
     } else {
-      setFilters((prev) => ({ ...prev, brand: '全部' }));
+      setFilters((prev) => ({ ...prev, brand: '' }));
     }
   };
 
@@ -230,39 +247,39 @@ function UsedCarsPage() {
                   />
                 </Form.Item>
 
-                <Form.Item label="品牌">
+                <Form.Item label={t('usedCars.brand')}>
                   <Select
                     name="brand"
                     value={filters.brand}
                     onChange={(value) => handleFilterChange({ target: { name: 'brand', value } })}
-                    options={allBrands.map(b => ({ value: b, label: b }))}
+                    options={[{ value: '', label: t('common.all') }, ...allBrands.map(b => ({ value: b, label: b }))]}
                   />
                 </Form.Item>
 
-                <Form.Item label="車型">
+                <Form.Item label={t('usedCars.type')}>
                   <Select
                     name="type"
                     value={filters.type}
                     onChange={(value) => handleFilterChange({ target: { name: 'type', value } })}
-                    options={carTypes.map(t => ({ value: t, label: t }))}
+                    options={[{ value: '', label: t('common.all') }, ...carTypes.map(typeVal => ({ value: typeVal, label: localize('types', typeVal) }))]}
                   />
                 </Form.Item>
 
-                <Form.Item label="燃料">
+                <Form.Item label={t('usedCars.fuel')}>
                   <Select
                     name="fuel"
                     value={filters.fuel}
                     onChange={(value) => handleFilterChange({ target: { name: 'fuel', value } })}
-                    options={fuelTypes.map(f => ({ value: f, label: f }))}
+                    options={[{ value: '', label: t('common.all') }, ...fuelTypes.map(fVal => ({ value: fVal, label: localize('fuels', fVal) }))]}
                   />
                 </Form.Item>
 
-                <Form.Item label="城市">
+                <Form.Item label={t('usedCars.city')}>
                   <Select
                     name="city"
                     value={filters.city}
                     onChange={(value) => handleFilterChange({ target: { name: 'city', value } })}
-                    options={allCities.map(c => ({ value: c, label: c }))}
+                    options={[{ value: '', label: t('common.all') }, ...allCities.map(c => ({ value: c, label: localize('cities', c) }))]}
                   />
                 </Form.Item>
 
@@ -273,9 +290,9 @@ function UsedCarsPage() {
                     onChange={(value) => handleFilterChange({ target: { name: 'priceRange', value } })}
                     options={[
                       { value: '', label: t('usedCars.allPrice') },
-                      { value: '0-100', label: '$0 - $100萬' },
-                      { value: '100-150', label: '$100-150萬' },
-                      { value: '150+', label: '$150萬以上' }
+                      { value: '0-100', label: t('usedCars.priceRanges.0_100') },
+                      { value: '100-150', label: t('usedCars.priceRanges.100_150') },
+                      { value: '150+', label: t('usedCars.priceRanges.150_plus') }
                     ]}
                   />
                 </Form.Item>
@@ -342,12 +359,12 @@ function UsedCarsPage() {
                     >
                       <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>{car.title}</h3>
                       <Space wrap style={{ marginBottom: '12px' }}>
-                        <Tag>{car.type}</Tag>
-                        <Tag>{car.fuel}</Tag>
-                        <Tag>{car.transmission}</Tag>
+                        <Tag>{localize('types', car.type)}</Tag>
+                        <Tag>{localize('fuels', car.fuel)}</Tag>
+                        <Tag>{localize('transmissions', car.transmission)}</Tag>
                       </Space>
                       <div style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#666' }}>
-                        <p style={{ margin: '2px 0' }}><strong>地點:</strong> {car.city}</p>
+                        <p style={{ margin: '2px 0' }}><strong>{t('usedCars.city')}:</strong> {localize('cities', car.city)}</p>
                         <p style={{ margin: '2px 0' }}><strong>里程:</strong> {car.mileage.toLocaleString()} KM</p>
                         <p style={{ margin: '2px 0' }}><strong>引擎:</strong> {car.engine}</p>
                         <p style={{ margin: '2px 0', color: '#d9863d', fontSize: '1.1rem', fontWeight: 'bold' }}>
@@ -399,7 +416,7 @@ function UsedCarsPage() {
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('usedCars.type')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.type}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('types', selectedCar.type)}</p>
                   </div>
                 </Col>
                 <Col span={12}>
@@ -411,7 +428,7 @@ function UsedCarsPage() {
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('usedCars.city')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.city}</p>
+                     <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('cities', selectedCar.city)}</p>
                   </div>
                 </Col>
                 <Col span={12}>
@@ -423,13 +440,13 @@ function UsedCarsPage() {
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('usedCars.fuel')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.fuel}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('fuels', selectedCar.fuel)}</p>
                   </div>
                 </Col>
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('usedCars.transmission')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.transmission}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('transmissions', selectedCar.transmission)}</p>
                   </div>
                 </Col>
                 <Col span={12}>

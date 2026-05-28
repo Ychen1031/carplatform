@@ -328,17 +328,17 @@ export function getCarById(id) {
  * 獲取唯一值集合
  */
 export function getUniqueBrands(cars = ALL_CARS) {
-  return ['全部', ...new Set(cars.map(car => car.brand))];
+  return [...new Set(cars.map(car => car.brand))];
 }
 
 export function getUniqueCities(cars = ALL_CARS) {
-  return ['全部', ...new Set(cars.map(car => car.city))];
+  return [...new Set(cars.map(car => car.city))];
 }
 
 export function getUniqueTypes(cars = ALL_CARS) {
-  return ['全部', ...new Set(cars.map(car => car.type))];
+  return [...new Set(cars.map(car => car.type))];
 }
 
 export function getUniqueFuels(cars = ALL_CARS) {
-  return ['全部', ...new Set(cars.map(car => car.fuel))];
+  return [...new Set(cars.map(car => car.fuel))];
 }

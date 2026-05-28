@@ -1,22 +1,21 @@
 import { Row, Col, Card, Button, Tag, Space, Empty } from 'antd';
 import { PhoneOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { TYPE_KEY_MAP, FUEL_KEY_MAP, TRANSMISSION_KEY_MAP, CITY_KEY_MAP } from '../utils/localeMaps';
 
 function ListingsPanel({ filteredListings, activeContactId, onToggleContact }) {
   const { t, i18n } = useTranslation();
 
-  const fuelLabelMap = {
-    Gasoline: '汽油',
-    Diesel: '柴油',
-    Hybrid: '油電',
-    EV: '純電',
-  };
-
-  const transmissionLabelMap = {
-    AT: '自排',
-    MT: '手排',
-    CVT: 'CVT',
-    'Single Speed': '單速',
+  const localize = (ns, raw) => {
+    if (!raw || raw === '') return t('common.all');
+    const keyMap = 
+      ns === 'types' ? TYPE_KEY_MAP : 
+      ns === 'fuels' ? FUEL_KEY_MAP : 
+      ns === 'transmissions' ? TRANSMISSION_KEY_MAP : 
+      ns === 'cities' ? CITY_KEY_MAP : 
+      undefined;
+    const key = keyMap ? (keyMap[raw] || raw) : raw;
+    return t(`${ns}.${key}`, { defaultValue: raw });
   };
 
   const numberFormat = new Intl.NumberFormat(i18n.language);
@@ -97,9 +96,9 @@ function ListingsPanel({ filteredListings, activeContactId, onToggleContact }) {
                     <Space wrap size={4}>
                       <Tag size="small">{t('listings.year')} {car.year}</Tag>
                       <Tag size="small">{t('listings.mileage')} {numberFormat.format(car.mileage)} km</Tag>
-                      <Tag size="small">{fuelLabelMap[car.fuel] || car.fuel}</Tag>
-                      <Tag size="small">{transmissionLabelMap[car.transmission] || car.transmission}</Tag>
-                      <Tag size="small">{car.city}</Tag>
+                      <Tag size="small">{localize('fuels', car.fuel)}</Tag>
+                      <Tag size="small">{localize('transmissions', car.transmission)}</Tag>
+                      <Tag size="small">{localize('cities', car.city)}</Tag>
                     </Space>
                   </div>
 

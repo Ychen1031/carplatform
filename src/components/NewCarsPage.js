@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Row, Col, Card, Button, Input, Select, Modal, Form, Empty, Space, Tag, Drawer } from 'antd';
 import { HeartOutlined, HeartFilled, PhoneOutlined, CarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { TYPE_KEY_MAP, FUEL_KEY_MAP, TRANSMISSION_KEY_MAP } from '../utils/localeMaps';
 import { NEW_CAR_BRANDS } from '../constants/brands';
 import { NEW_CARS_DATA } from '../constants/newCarsData';
 import { useCar } from '../contexts/CarContext';
@@ -21,10 +22,10 @@ function NewCarsPage() {
   const allCars = useMemo(() => [...staticNewCars, ...state.newCars], [staticNewCars, state.newCars]);
   const [filters, setFilters] = useState({
     keyword: '',
-    brand: '全部',
-    type: '全部',
+    brand: '',
+    type: '',
     priceRange: '',
-    fuel: '全部',
+    fuel: '',
   });
   const [selectedCar, setSelectedCar] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -50,28 +51,26 @@ function NewCarsPage() {
 
   const isFavorited = (carId) => state.favorites.includes(String(carId));
 
-  const allBrands = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.brand))],
-    [allCars]
-  );
+  const allBrands = useMemo(() => [...new Set(allCars.map((car) => car.brand))], [allCars]);
 
-  const carTypes = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.type))],
-    [allCars]
-  );
+  const carTypes = useMemo(() => [...new Set(allCars.map((car) => car.type))], [allCars]);
 
-  const fuelTypes = useMemo(
-    () => ['全部', ...new Set(allCars.map((car) => car.fuel))],
-    [allCars]
-  );
+  const fuelTypes = useMemo(() => [...new Set(allCars.map((car) => car.fuel))], [allCars]);
+
+  const localize = (ns, raw) => {
+    if (!raw || raw === '') return t('common.all');
+    const keyMap = ns === 'types' ? TYPE_KEY_MAP : ns === 'fuels' ? FUEL_KEY_MAP : TRANSMISSION_KEY_MAP;
+    const key = keyMap[raw] || raw;
+    return t(`${ns}.${key}`, { defaultValue: raw });
+  };
 
   const filteredCars = useMemo(() => {
     const keyword = filters.keyword.trim().toLowerCase();
     return allCars.filter((car) => {
       const keywordMatch = keyword.length === 0 || car.title.toLowerCase().includes(keyword) || car.brand.toLowerCase().includes(keyword);
-      const brandMatch = filters.brand === '全部' || car.brand === filters.brand;
-      const typeMatch = filters.type === '全部' || car.type === filters.type;
-      const fuelMatch = filters.fuel === '全部' || car.fuel === filters.fuel;
+      const brandMatch = filters.brand === '' || car.brand === filters.brand;
+      const typeMatch = filters.type === '' || car.type === filters.type;
+      const fuelMatch = filters.fuel === '' || car.fuel === filters.fuel;
 
       let priceMatch = true;
       if (filters.priceRange === '0-100') {
@@ -96,7 +95,7 @@ function NewCarsPage() {
     if (brand.name !== selectedBrand?.name) {
       setFilters((prev) => ({ ...prev, brand: brand.name }));
     } else {
-      setFilters((prev) => ({ ...prev, brand: '全部' }));
+      setFilters((prev) => ({ ...prev, brand: '' }));
     }
   };
 
@@ -222,30 +221,30 @@ function NewCarsPage() {
                   />
                 </Form.Item>
 
-                <Form.Item label="品牌">
+                <Form.Item label={t('newCars.brand')}>
                   <Select
                     name="brand"
                     value={filters.brand}
                     onChange={(value) => handleFilterChange({ target: { name: 'brand', value } })}
-                    options={allBrands.map(b => ({ value: b, label: b }))}
+                    options={[{ value: '', label: t('common.all') }, ...allBrands.map(b => ({ value: b, label: b }))]}
                   />
                 </Form.Item>
 
-                <Form.Item label="車型">
+                <Form.Item label={t('newCars.type')}>
                   <Select
                     name="type"
                     value={filters.type}
                     onChange={(value) => handleFilterChange({ target: { name: 'type', value } })}
-                    options={carTypes.map(t => ({ value: t, label: t }))}
+                    options={[{ value: '', label: t('common.all') }, ...carTypes.map(typeVal => ({ value: typeVal, label: localize('types', typeVal) }))]}
                   />
                 </Form.Item>
 
-                <Form.Item label="燃料">
+                <Form.Item label={t('newCars.fuel')}>
                   <Select
                     name="fuel"
                     value={filters.fuel}
                     onChange={(value) => handleFilterChange({ target: { name: 'fuel', value } })}
-                    options={fuelTypes.map(f => ({ value: f, label: f }))}
+                    options={[{ value: '', label: t('common.all') }, ...fuelTypes.map(fVal => ({ value: fVal, label: localize('fuels', fVal) }))]}
                   />
                 </Form.Item>
 
@@ -256,9 +255,9 @@ function NewCarsPage() {
                     onChange={(value) => handleFilterChange({ target: { name: 'priceRange', value } })}
                     options={[
                       { value: '', label: t('newCars.allPrice') },
-                      { value: '0-100', label: '$0 - $100萬' },
-                      { value: '100-200', label: '$100-200萬' },
-                      { value: '200+', label: '$200萬以上' }
+                      { value: '0-100', label: t('newCars.priceRanges.0_100') },
+                      { value: '100-200', label: t('newCars.priceRanges.100_200') },
+                      { value: '200+', label: t('newCars.priceRanges.200_plus') }
                     ]}
                   />
                 </Form.Item>
@@ -325,9 +324,9 @@ function NewCarsPage() {
                     >
                       <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem' }}>{car.title}</h3>
                       <Space wrap style={{ marginBottom: '12px' }}>
-                        <Tag>{car.type}</Tag>
-                        <Tag>{car.fuel}</Tag>
-                        <Tag>{car.transmission}</Tag>
+                        <Tag>{localize('types', car.type)}</Tag>
+                        <Tag>{localize('fuels', car.fuel)}</Tag>
+                        <Tag>{localize('transmissions', car.transmission)}</Tag>
                       </Space>
                       <div style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#666' }}>
                         <p style={{ margin: '2px 0' }}><strong>引擎:</strong> {car.engine}</p>
@@ -380,19 +379,19 @@ function NewCarsPage() {
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('newCars.type')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.type}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('types', selectedCar.type)}</p>
                   </div>
                 </Col>
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('newCars.fuel')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.fuel}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('fuels', selectedCar.fuel)}</p>
                   </div>
                 </Col>
                 <Col span={12}>
                   <div style={{ backgroundColor: '#fafafa', padding: '12px', borderRadius: '4px', marginBottom: '8px' }}>
                     <p style={{ margin: '0 0 4px 0', color: '#666', fontSize: '0.9rem' }}>{t('newCars.transmission')}</p>
-                    <p style={{ margin: 0, fontWeight: 'bold' }}>{selectedCar.transmission}</p>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{localize('transmissions', selectedCar.transmission)}</p>
                   </div>
                 </Col>
                 <Col span={12}>

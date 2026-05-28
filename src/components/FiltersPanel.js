@@ -1,6 +1,7 @@
 import { Card, Form, Input, Select, Row, Col } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { CITY_KEY_MAP } from '../utils/localeMaps';
 
 function FiltersPanel({
   filters,
@@ -10,7 +11,15 @@ function FiltersPanel({
   sortBy,
   onSortChange,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const localizeCity = (city) => {
+    if (!city) return t('common.all');
+    const key = CITY_KEY_MAP[city] || city;
+    const result = t(`cities.${key}`, { defaultValue: city });
+    console.log('[FiltersPanel] localizeCity:', { city, key, result, lang: i18n.language });
+    return result;
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -78,30 +87,24 @@ function FiltersPanel({
             </Form.Item>
           </Col>
 
-          <Col xs={24} sm={12} md={8}>
+                <Col xs={24} sm={12} md={8}>
             <Form.Item label={t('filters.brand')}>
               <Select
                 name="brand"
                 value={filters.brand}
                 onChange={handleSelectChange('brand')}
-                options={allBrands.map(brand => ({
-                  value: brand,
-                  label: brand
-                }))}
+                options={[{ value: '', label: t('common.all') }, ...allBrands.map(brand => ({ value: brand, label: brand }))]}
               />
             </Form.Item>
           </Col>
 
-          <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={8}>
             <Form.Item label={t('filters.city')}>
               <Select
                 name="city"
                 value={filters.city}
                 onChange={handleSelectChange('city')}
-                options={allCities.map(city => ({
-                  value: city,
-                  label: city
-                }))}
+                options={[{ value: '', label: t('common.all') }, ...allCities.map(city => ({ value: city, label: localizeCity(city) }))]}
               />
             </Form.Item>
           </Col>
