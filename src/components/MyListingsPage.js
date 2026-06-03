@@ -60,7 +60,7 @@ function MyListingsPage() {
     };
 
     fetchUserListings();
-  }, [navigate, showToast]);
+  }, [navigate, showToast, t]);
 
   // 排序邏輯
   const getSortedListings = () => {

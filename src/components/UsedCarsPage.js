@@ -133,11 +133,6 @@ function UsedCarsPage() {
     setActionModal('testdrive');
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setContactForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleFormSubmit = async () => {
     const inquiryTitle = actionModal === 'contact'
       ? t('usedCars.inquiryTitleContact')
