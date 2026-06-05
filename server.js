@@ -9,6 +9,7 @@ const app = express();
 const PORT = 3001;
 // Google Apps Script Web App URL - 建議透過環境變數設定，避免硬編碼
 const GOOGLE_SHEETS_APPS_SCRIPT_URL = process.env.GOOGLE_SHEETS_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwFJbwFLjEqvlVP32WrDMWitTTk6ZUERysE8rR_1SusTpyj1Rw-Rg6wSvVfbZ_DK9MNgA/exec';
+const NEWS_API_KEY = process.env.NEWS_API_KEY || '';
 
 // 中間件
 app.use(cors());
@@ -158,6 +159,259 @@ function postJsonToAppsScript(url, payload) {
 
     doRequest(url, maxRedirects);
   });
+}
+
+function fetchTextWithRedirects(url, redirectsLeft = 5) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        Accept: 'application/rss+xml, application/xml, text/xml, application/json, text/plain, */*',
+      },
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+        res.resume();
+        const nextUrl = new URL(res.headers.location, url).toString();
+        resolve(fetchTextWithRedirects(nextUrl, redirectsLeft - 1));
+        return;
+      }
+
+      let body = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        resolve({ statusCode: res.statusCode, body });
+      });
+    });
+
+    req.on('error', reject);
+  });
+}
+
+function decodeHtmlEntities(value = '') {
+  return value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+}
+
+function stripHtml(value = '') {
+  // Google News RSS description is double-encoded HTML, so we:
+  // 1. Decode HTML entities (&lt; → <, &gt; → >, etc.)
+  // 2. Strip any real HTML tags
+  // 3. Decode entities again (in case of nested encoding)
+  // 4. Clean up whitespace
+  let result = decodeHtmlEntities(value);
+  result = result.replace(/<[^>]*>/g, ' ');   // strip real tags
+  result = decodeHtmlEntities(result);         // decode any remaining entities
+  result = result.replace(/<[^>]*>/g, ' ');   // strip again after decode
+  result = result.replace(/\s+/g, ' ').trim();
+  return result;
+}
+
+function extractXmlTag(block, tagName) {
+  const match = block.match(new RegExp('<' + tagName + '[^>]*>([\\s\\S]*?)<\\/' + tagName + '>', 'i'));
+  return match ? stripHtml(match[1]) : '';
+}
+
+function parseRssItems(xml, categoryKey, categoryLabel, sourceName, maxItems = 5) {
+  const items = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+  let match;
+
+  while ((match = itemRegex.exec(xml)) !== null && items.length < maxItems) {
+    const block = match[1];
+    const title = extractXmlTag(block, 'title');
+    const description = extractXmlTag(block, 'description');
+    // Google News RSS uses <link/> before text, handle both formats
+    const linkMatch = block.match(/<link>([\s\S]*?)<\/link>/i) || block.match(/<link\/>\s*([^<]+)/i);
+    const link = linkMatch ? stripHtml(linkMatch[1]) : '';
+    const published = extractXmlTag(block, 'pubDate');
+    // Extract <source> tag which Google News RSS includes (e.g. "Yahoo - 汽機車")
+    const sourceTag = extractXmlTag(block, 'source');
+    const effectiveSource = sourceTag || sourceName;
+
+    // Google News RSS description often looks like:
+    // "Article Title - Source Name" or just the title repeated with source appended
+    // We prefer the title as summary, falling back to a cleaned description
+    let summary = '';
+    if (description) {
+      // Remove the trailing " - Source Name" pattern that Google News appends
+      const cleanedDesc = description.replace(/\s*-\s*[^-]{1,60}$/u, '').trim();
+      // Only use description if it adds info beyond the title (longer than half the title)
+      summary = cleanedDesc.length > title.length * 0.5 ? cleanedDesc : title;
+    } else {
+      summary = title;
+    }
+
+    if (!title) continue;
+
+    // Detect if article is from Yahoo automotive
+    const isYahoo = /yahoo/i.test(effectiveSource);
+    const tags = [categoryLabel];
+    if (isYahoo) tags.push('Yahoo 汽機車');
+    else tags.push(effectiveSource || sourceName);
+
+    items.push({
+      id: `${categoryKey}-${items.length + 1}-${Buffer.from(title).toString('base64').slice(0, 8)}`,
+      title,
+      summary,
+      source: effectiveSource,
+      isYahoo,
+      date: published ? new Date(published).toISOString() : '',
+      tags,
+      category: categoryKey,
+      content: [summary, link ? `原文：${link}` : ''],
+      url: link || '',
+    });
+  }
+
+  return items;
+}
+
+function normalizeNewsApiItem(item, categoryKey, categoryLabel) {
+  const title = item?.title || '';
+  const summary = item?.description || item?.content || title;
+  return {
+    id: `${categoryKey}-${Buffer.from(`${title}-${item?.url || ''}`).toString('base64').slice(0, 10)}`,
+    title,
+    summary,
+    source: item?.source?.name || 'NewsAPI',
+    date: item?.publishedAt ? new Date(item.publishedAt).toISOString() : '',
+    tags: [categoryLabel, item?.source?.name || 'NewsAPI'],
+    category: categoryKey,
+    content: [summary, item?.url ? `原文：${item.url}` : ''],
+    url: item?.url || '',
+    image: item?.urlToImage || '',
+  };
+}
+
+const CAR_INSIGHT_QUERIES = {
+  articles: [
+    { key: 'buying-guide', label: '購車技巧', query: '汽車 購車 技巧 OR 買車 教學 OR 新車 選購' },
+    { key: 'powertrain', label: '動力比較', query: '油電 OR 純電 OR 汽油 車款 比較 site:yahoo.com OR site:gochoice.com.tw OR site:carnews.com' },
+    { key: 'test-drive', label: '試駕體驗', query: '汽車 試駕 OR 試乘 OR 車評 site:yahoo.com OR site:carnews.com' },
+    { key: 'ownership', label: '持有保養', query: '汽車 保養 OR 保固 OR 維修 費用' },
+  ],
+  news: [
+    { key: 'launch', label: '新車上市', query: '新車 發表 OR 上市 OR 改款 site:yahoo.com OR site:gochoice.com.tw' },
+    { key: 'market', label: '市場趨勢', query: '汽車 市場 OR 銷售 數據 OR 休旅' },
+    { key: 'electric', label: '電動車', query: '電動車 OR 純電 車款 OR 充電 site:yahoo.com' },
+    { key: 'industry', label: '產業動態', query: '汽車品牌 OR 車廠 新聞 OR 台灣汽車' },
+  ],
+};
+
+// ── 每日快取 ──────────────────────────────────────────────────────────────
+// 以「台灣日期字串 (YYYY-MM-DD) + type」為 key，每天第一次請求時重新抓取
+const insightsCache = new Map(); // key: `${type}-${dateStr}` => { items, source, fetchedAt }
+
+function getTaiwanDateStr() {
+  // UTC+8
+  const now = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  return now.toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
+
+async function fetchNewsApiItems(query, pageSize = 5) {
+  if (!NEWS_API_KEY) return null;
+
+  const url = new URL('https://newsapi.org/v2/everything');
+  url.searchParams.set('q', query);
+  url.searchParams.set('language', 'zh');
+  url.searchParams.set('sortBy', 'publishedAt');
+  url.searchParams.set('pageSize', String(pageSize));
+  url.searchParams.set('apiKey', NEWS_API_KEY);
+
+  const { statusCode, body } = await fetchTextWithRedirects(url.toString());
+  if (statusCode < 200 || statusCode >= 300) {
+    throw new Error(`NewsAPI request failed with status ${statusCode}`);
+  }
+
+  const parsed = JSON.parse(body);
+  return Array.isArray(parsed.articles) ? parsed.articles : [];
+}
+
+// Google News RSS 是主要來源（可抓到 Yahoo 汽機車、GOCHOICE 等台灣媒體）
+async function fetchGoogleNewsRssItems(query, categoryKey, categoryLabel, pageSize = 5) {
+  const url = new URL('https://news.google.com/rss/search');
+  url.searchParams.set('q', query);
+  url.searchParams.set('hl', 'zh-TW');
+  url.searchParams.set('gl', 'TW');
+  url.searchParams.set('ceid', 'TW:zh-Hant');
+
+  const { statusCode, body } = await fetchTextWithRedirects(url.toString());
+  if (statusCode < 200 || statusCode >= 300) {
+    throw new Error(`Google News RSS request failed with status ${statusCode}`);
+  }
+
+  return parseRssItems(body, categoryKey, categoryLabel, 'Google News', pageSize);
+}
+
+async function fetchCarInsightsFromNetwork(type) {
+  const categories = CAR_INSIGHT_QUERIES[type] || CAR_INSIGHT_QUERIES.articles;
+
+  if (Boolean(NEWS_API_KEY)) {
+    const buckets = await Promise.all(categories.map(async (category) => {
+      try {
+        const articles = await fetchNewsApiItems(category.query, 5);
+        return (articles || []).map((item) => normalizeNewsApiItem(item, category.key, category.label));
+      } catch (error) {
+        console.error('NewsAPI 抓取失敗:', category.key, error.message);
+        return [];
+      }
+    }));
+    return { buckets, source: 'newsapi' };
+  }
+
+  // 主要使用 Google News RSS（會包含 Yahoo 汽機車、GOCHOICE 等台灣媒體文章）
+  const buckets = await Promise.all(categories.map(async (category) => {
+    try {
+      return await fetchGoogleNewsRssItems(category.query, category.key, category.label, 6);
+    } catch (error) {
+      console.error('Google News RSS 抓取失敗:', category.key, error.message);
+      return [];
+    }
+  }));
+
+  return { buckets, source: 'google-news-rss' };
+}
+
+async function fetchCarInsights(type) {
+  const dateStr = getTaiwanDateStr();
+  const cacheKey = `${type}-${dateStr}`;
+
+  // 若今天已快取，直接回傳
+  if (insightsCache.has(cacheKey)) {
+    console.log(`[car-insights] 使用快取 (${cacheKey})`);
+    return insightsCache.get(cacheKey);
+  }
+
+  console.log(`[car-insights] 重新抓取 (${cacheKey})`);
+  const { buckets, source } = await fetchCarInsightsFromNetwork(type);
+
+  const merged = buckets.flat();
+  // 依發佈時間降冪排序（最新在前）
+  merged.sort((a, b) => {
+    const ta = a && a.date ? new Date(a.date).getTime() : 0;
+    const tb = b && b.date ? new Date(b.date).getTime() : 0;
+    return tb - ta;
+  });
+  const seen = new Set();
+  const filtered = merged.filter((item) => {
+    const key = item.url || item.title;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 24);
+
+  const result = { items: filtered, source, date: dateStr };
+  insightsCache.set(cacheKey, result);
+  return result;
 }
 
 /**
@@ -391,6 +645,36 @@ app.get('/api/messages', (req, res) => {
     message: '聯絡訊息已改存 Google 試算表，請從試算表或 Apps Script 讀取。',
     messages: [],
   });
+});
+
+/**
+ * 新車文章 / 新聞 API
+ * GET /api/car-insights?type=articles|news
+ */
+app.get('/api/car-insights', async (req, res) => {
+  const type = req.query.type === 'news' ? 'news' : 'articles';
+
+  try {
+    const result = await fetchCarInsights(type);
+    const items = result && result.items ? result.items : [];
+    const source = result && result.source ? result.source : (NEWS_API_KEY ? 'newsapi' : 'google-news-rss');
+    const date = result && result.date ? result.date : getTaiwanDateStr();
+
+    return res.json({
+      success: true,
+      source,
+      type,
+      date,
+      items,
+    });
+  } catch (error) {
+    console.error('car-insights API 失敗:', error);
+    return res.status(500).json({
+      success: false,
+      message: '無法取得新聞內容',
+      error: error.message,
+    });
+  }
 });
 
 // 管理用：取得本機備援的聯絡訊息
@@ -696,6 +980,24 @@ app.get('/api/logs/:filename', (req, res) => {
 /**
  * 啟動服務器
  */
+// 除錯：列出所有註冊的路由（開發階段用）
+app.get('/__debug_routes', (req, res) => {
+  try {
+    const routes = [];
+    if (app._router && app._router.stack) {
+      app._router.stack.forEach((layer) => {
+        if (layer.route && layer.route.path) {
+          const methods = Object.keys(layer.route.methods).join(',');
+          routes.push({ path: layer.route.path, methods });
+        }
+      });
+    }
+    res.json({ success: true, routes });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });

@@ -62,6 +62,8 @@ function Header() {
             { label: t('hero.listings'), to: '/new-cars' },
             { label: t('hero.brands'), to: '/new-cars' },
             { label: t('hero.cities'), to: '/used-cars' },
+            { label: t('footer.carArticles'), to: '/new-cars/articles' },
+            { label: t('footer.carNews'), to: '/new-cars/news' },
           ],
         },
       ],
@@ -75,8 +77,6 @@ function Header() {
           title: t('header.newCars'),
           items: [
             { label: t('footer.modelLibrary'), to: '/new-cars' },
-            { label: t('footer.carArticles'), to: '/about' },
-            { label: t('footer.carNews'), to: '/contact' },
             { label: t('footer.carCompare'), to: '/new-cars' },
             { label: t('footer.carRanking'), to: '/used-cars' },
           ],

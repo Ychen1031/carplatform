@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
 import NewCarsPage from './components/NewCarsPage';
+import CarInsightsPage from './components/CarInsightsPage';
 import UsedCarsPage from './components/UsedCarsPage';
 import AboutPage from './components/AboutPage';
 import MyFavoritesPage from './components/MyFavoritesPage';
@@ -55,6 +56,8 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/new-cars" element={<NewCarsPage />} />
+                <Route path="/new-cars/articles" element={<CarInsightsPage variant="articles" />} />
+                <Route path="/new-cars/news" element={<CarInsightsPage variant="news" />} />
                 <Route path="/used-cars" element={<UsedCarsPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route

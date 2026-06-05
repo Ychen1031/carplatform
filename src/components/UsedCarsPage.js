@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Button, Input, Select, Modal, Form, Empty, Space, Tag, Drawer } from 'antd';
 import { HeartOutlined, HeartFilled, PhoneOutlined, CarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,8 @@ function UsedCarsPage() {
   const { t, i18n } = useTranslation();
   const { success } = useToast();
   const { state, toggleFavorite } = useCar();
+  const navigate = useNavigate();
+  const [loginPromptVisible, setLoginPromptVisible] = useState(false);
   // 為靜態中古車數據添加 ID 前綴以避免與後端數據衝突
   // 靜態數據 ID 範圍: 600000+ (id + 600000)
   const staticUsedCars = useMemo(
@@ -39,6 +42,12 @@ function UsedCarsPage() {
   });
 
   const handleFavoriteClick = (carId) => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      setLoginPromptVisible(true);
+      return;
+    }
+
     const normalizedId = String(carId);
     const isAdding = !state.favorites.includes(normalizedId);
     
@@ -611,6 +620,35 @@ function UsedCarsPage() {
           <Button type="primary" onClick={() => setActionModal(null)} block>
             {t('usedCars.inquiryClose')}
           </Button>
+        </div>
+      </Modal>
+
+      {/* 未登入提示 Modal */}
+      <Modal
+        title="請先登入"
+        open={loginPromptVisible}
+        onCancel={() => setLoginPromptVisible(false)}
+        footer={null}
+        centered
+        width={360}
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0 8px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔒</div>
+          <p style={{ fontSize: '1rem', marginBottom: '8px', fontWeight: 500 }}>收藏車輛需要先登入</p>
+          <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '24px' }}>登入後即可收藏喜愛的車輛，並在「我的收藏」隨時查看。</p>
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Button
+              type="primary"
+              block
+              size="large"
+              onClick={() => { setLoginPromptVisible(false); navigate('/login'); }}
+            >
+              前往登入
+            </Button>
+            <Button block onClick={() => setLoginPromptVisible(false)}>
+              稍後再說
+            </Button>
+          </Space>
         </div>
       </Modal>
     </div>
