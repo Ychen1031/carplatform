@@ -125,9 +125,6 @@
 .car-insights-layout {
   max-width: 1180px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 22px;
 }
 
 .car-insights-main,
@@ -216,9 +213,7 @@
 }
 
 .car-insights-sidebar {
-  display: grid;
-  gap: 16px;
-  align-content: start;
+  display: none;
 }
 
 .car-insights-tag-cloud {
@@ -286,15 +281,7 @@
   color: #201b16;
 }
 
-@media (max-width: 1024px) {
-  .car-insights-layout {
-    grid-template-columns: 1fr;
-  }
 
-  .car-insights-sidebar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
 @media (max-width: 768px) {
   .car-insights-hero {

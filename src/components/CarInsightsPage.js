@@ -43,6 +43,26 @@ function normalizeFetchedItem(item, variant) {
   };
 }
 
+const CATEGORY_ZH = {
+  'powertrain': '動力系統',
+  'ownership': '用車心得',
+  'test-drive': '試駕評測',
+  'buying-guide': '購車指南',
+  'market': '市場資訊',
+  'safety': '安全科技',
+  'ev': '電動車',
+  'electric': '電動車',
+  'suv': 'SUV',
+  'sedan': '轎車',
+  'comparison': '比較評測',
+  'industry': '產業動態',
+  'launch': '新車發表',
+  'recall': '召回公告',
+  'policy': '法規政策',
+};
+
+const localizeCategory = (value) => CATEGORY_ZH[value] || value;
+
 function CarInsightsPage({ variant }) {
   const { t } = useTranslation();
   const config = PAGE_CONFIG[variant] || PAGE_CONFIG.articles;
@@ -96,7 +116,7 @@ function CarInsightsPage({ variant }) {
 
   const categories = useMemo(() => {
     const values = [...new Set(items.map((item) => item.category))];
-    return [{ value: 'all', label: t('common.all') }, ...values.map((value) => ({ value, label: value }))];
+    return [{ value: 'all', label: t('common.all') }, ...values.map((value) => ({ value, label: localizeCategory(value) }))];
   }, [items, t]);
 
   const filteredItems = useMemo(() => {
@@ -208,7 +228,7 @@ function CarInsightsPage({ variant }) {
             ) : (
               <Row gutter={[16, 16]}>
                 {filteredItems.map((item) => (
-                  <Col key={item.id} xs={24} lg={12}>
+                  <Col key={item.id} xs={24} sm={12} lg={8}>
                     <Card
                       className={`car-insights-card${item.isYahoo ? ' car-insights-card--yahoo' : ''}`}
                       hoverable
@@ -216,7 +236,7 @@ function CarInsightsPage({ variant }) {
                       style={{ cursor: (item.url || item.link) ? 'pointer' : 'default' }}
                     >
                       <div className="car-insights-card-topline">
-                        <Tag color={variant === 'articles' ? 'volcano' : 'geekblue'}>{item.category}</Tag>
+                        <Tag color={variant === 'articles' ? 'volcano' : 'geekblue'}>{localizeCategory(item.category)}</Tag>
                         {item.isYahoo && (
                           <Tag color="red" style={{ fontWeight: 600 }}>Yahoo 汽機車</Tag>
                         )}

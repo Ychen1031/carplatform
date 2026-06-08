@@ -176,7 +176,7 @@ function Header() {
 
         {/* ── Logo ── */}
         <Link to="/" className="site-logo" onClick={handleLogoClick}>
-          <img src="/car-logo.png" alt="好車平台 logo" className="site-logo-img" />
+          <img src="/car-logo.png" alt="車行萬里 logo" className="site-logo-img" />
           <div className="site-logo-text">
             <span className="site-logo-name">{t('header.brandName')}</span>
             <span className="site-logo-tagline">{t('header.tagline')}</span>
